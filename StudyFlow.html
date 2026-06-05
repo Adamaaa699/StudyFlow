@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StudyFlow</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg-base:#0d0e11;--bg-surface:#141519;--bg-elevated:#1c1d24;--bg-hover:#22232c;--border:#2a2b35;--border-subtle:#1e1f28;--text-primary:#f0f0f3;--text-secondary:#8a8b96;--text-muted:#55566a;--accent:#6c63ff;--accent-soft:rgba(108,99,255,.12);--accent-glow:rgba(108,99,255,.35);--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--pink:#ec4899;--cyan:#06b6d4;--orange:#f97316;--r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:22px;--sh-sm:0 1px 4px rgba(0,0,0,.35);--sh-md:0 4px 16px rgba(0,0,0,.4);--sh-lg:0 8px 32px rgba(0,0,0,.5);--sw:240px;--th:60px;--fb:"DM Sans",sans-serif;--ft:"Syne",sans-serif;--tr:.18s cubic-bezier(.4,0,.2,1)}
+[data-theme="light"]{--bg-base:#f5f5f8;--bg-surface:#fff;--bg-elevated:#fff;--bg-hover:#f0f0f5;--border:#e2e2ea;--border-subtle:#ececf4;--text-primary:#12121a;--text-secondary:#6b6b80;--text-muted:#aaaab8;--accent-soft:rgba(108,99,255,.09);--accent-glow:rgba(108,99,255,.2);--sh-sm:0 1px 4px rgba(0,0,0,.06);--sh-md:0 4px 16px rgba(0,0,0,.08);--sh-lg:0 8px 32px rgba(0,0,0,.1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg-base);color:var(--text-primary);line-height:1.6;overflow-x:hidden;transition:background var(--tr),color var(--tr)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* ===== LAYOUT ===== */
+#app{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:var(--sw);min-width:var(--sw);background:var(--bg-surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;transition:width var(--tr),min-width var(--tr),transform var(--tr);z-index:200}
+#sidebar.collapsed{width:64px;min-width:64px}
+.slg{display:flex;align-items:center;gap:10px;padding:18px 16px 14px;border-bottom:1px solid var(--border-subtle);cursor:pointer;user-select:none}
+.slg-icon{width:32px;height:32px;background:var(--accent);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 12px var(--accent-glow)}
+.slg-txt{font-family:var(--ft);font-size:1.1rem;font-weight:800;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;transition:opacity var(--tr),width var(--tr)}
+#sidebar.collapsed .slg-txt{opacity:0;width:0}
+.ss{padding:8px 0}
+.ss-label{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:6px 18px 4px;white-space:nowrap;overflow:hidden;transition:opacity var(--tr)}
+#sidebar.collapsed .ss-label{opacity:0}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 14px;margin:1px 8px;border-radius:var(--r-md);cursor:pointer;color:var(--text-secondary);font-size:.9rem;font-weight:500;transition:background var(--tr),color var(--tr);white-space:nowrap;overflow:hidden}
+.ni svg{flex-shrink:0;width:18px;height:18px}
+.ni span{overflow:hidden;transition:opacity var(--tr),width var(--tr)}
+#sidebar.collapsed .ni span{opacity:0;width:0}
+.ni .nb{margin-left:auto;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:99px;line-height:1.6;flex-shrink:0}
+#sidebar.collapsed .nb{display:none}
+.ni:hover{background:var(--bg-hover);color:var(--text-primary)}
+.ni.active{background:var(--accent-soft);color:var(--accent)}
+.sf{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border-subtle)}
+.xpw{padding:8px 14px 4px;overflow:hidden;transition:opacity var(--tr)}
+#sidebar.collapsed .xpw{opacity:0;pointer-events:none}
+.xpl{font-size:.72rem;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.xpt{height:5px;background:var(--border);border-radius:99px;overflow:hidden}
+.xpf{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:99px;transition:width .6s ease}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{height:var(--th);min-height:var(--th);display:flex;align-items:center;padding:0 24px;background:var(--bg-surface);border-bottom:1px solid var(--border);gap:12px;z-index:100}
+.tbt{font-family:var(--ft);font-size:1.05rem;font-weight:700;flex:1}
+.tba{display:flex;align-items:center;gap:8px}
+.ib{width:36px;height:36px;border-radius:var(--r-md);border:none;background:var(--bg-elevated);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background var(--tr),color var(--tr)}
+.ib:hover{background:var(--bg-hover);color:var(--text-primary)}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0;cursor:pointer}
+#content{flex:1;overflow-y:auto;padding:28px 28px 48px}
+
+/* ===== PANELS ===== */
+.panel{display:none;animation:fuA .25s ease}.panel.active{display:block}
+@keyframes fuA{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stitle{font-family:var(--ft);font-size:1.45rem;font-weight:800;margin-bottom:4px;letter-spacing:-.4px}
+.ssub{color:var(--text-secondary);font-size:.88rem;margin-bottom:24px}
+.card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;transition:box-shadow var(--tr)}
+.card:hover{box-shadow:var(--sh-md)}
+.ctitle{font-family:var(--ft);font-weight:700;font-size:.95rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.cticn{width:30px;height:30px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:600px){.g3,.g4,.g2{grid-template-columns:1fr}#content{padding:16px 14px 48px}#sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%)}#sidebar.mobile-open{transform:translateX(0)}#main{width:100%}}
+
+/* ===== ONBOARDING ===== */
+#ob-screen{position:fixed;inset:0;background:var(--bg-base);z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px}
+.ob-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:40px;max-width:480px;width:100%;box-shadow:var(--sh-lg);text-align:center}
+.ob-logo{width:56px;height:56px;background:var(--accent);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 20px var(--accent-glow)}
+.ob-step{display:none}.ob-step.active{display:block}
+
+/* ===== DASHBOARD ===== */
+.gbanner{background:linear-gradient(120deg,var(--accent),var(--cyan));border-radius:var(--r-xl);padding:28px 32px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.gbanner::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='20' fill='%23fff' fill-opacity='.05'/%3E%3C/svg%3E");pointer-events:none}
+.gname{font-family:var(--ft);font-size:1.5rem;font-weight:800}
+.gquote{font-size:.88rem;opacity:.85;margin-top:6px;max-width:460px}
+.gdate{font-size:.78rem;opacity:.7;margin-top:10px}
+.scard{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:6px;transition:box-shadow var(--tr)}
+.scard:hover{box-shadow:var(--sh-md)}
+.sicn{width:38px;height:38px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.sval{font-family:var(--ft);font-size:1.8rem;font-weight:800;line-height:1}
+.slabel{font-size:.8rem;color:var(--text-secondary)}
+.sdelta{font-size:.75rem;color:var(--green)}
+.tti{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-md);transition:background var(--tr);cursor:pointer}
+.tti:hover{background:var(--bg-hover)}
+.ttcb{width:18px;height:18px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background var(--tr),border-color var(--tr)}
+.ttcb.chk{background:var(--accent);border-color:var(--accent)}
+
+/* ===== INPUT / BUTTONS ===== */
+.ifield{border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-primary);border-radius:var(--r-md);padding:8px 12px;font-size:.88rem;font-family:var(--fb);outline:none;transition:border-color var(--tr)}
+.ifield:focus{border-color:var(--accent)}
+.ifield::placeholder{color:var(--text-muted)}
+.ifield.grow{flex:1;min-width:150px}
+select.ifield{cursor:pointer}
+.btn{border:none;border-radius:var(--r-md);padding:8px 16px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:var(--fb);display:flex;align-items:center;gap:6px;transition:all var(--tr)}
+.bp{background:var(--accent);color:#fff}.bp:hover{filter:brightness(1.1);box-shadow:0 0 16px var(--accent-glow)}
+.bg{background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border)}.bg:hover{background:var(--bg-hover);color:var(--text-primary)}
+.bd{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}.bd:hover{background:rgba(239,68,68,.2)}
+
+/* ===== TASKS ===== */
+.tf{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.fb{border:1px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);border-radius:99px;padding:5px 14px;font-size:.82rem;font-weight:500;cursor:pointer;transition:all var(--tr);font-family:var(--fb)}
+.fb:hover{border-color:var(--accent);color:var(--accent)}.fb.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.atf{display:flex;gap:10px;margin-bottom:20px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;flex-wrap:wrap}
+.tl{display:flex;flex-direction:column;gap:8px}
+.ti{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 16px;display:flex;align-items:center;gap:12px;transition:box-shadow var(--tr),border-color var(--tr),opacity var(--tr)}
+.ti:hover{border-color:var(--accent);box-shadow:var(--sh-sm)}
+.ti.done{opacity:.55}
+.tcb{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
+.tcb.chk{background:var(--accent);border-color:var(--accent)}
+.tb{flex:1;min-width:0}
+.tn{font-size:.9rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tn.done{text-decoration:line-through;color:var(--text-muted)}
+.tmeta{display:flex;gap:8px;margin-top:3px;align-items:center;flex-wrap:wrap}
+.pill{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.ps{background:var(--accent-soft);color:var(--accent)}
+.ph{background:rgba(239,68,68,.12);color:var(--red)}
+.pm{background:rgba(245,158,11,.12);color:var(--yellow)}
+.pl{background:rgba(34,197,94,.12);color:var(--green)}
+.tdl{font-size:.75rem;color:var(--text-muted)}
+.tcd{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.cd-urg{background:rgba(239,68,68,.15);color:var(--red)}
+.cd-soon{background:rgba(245,158,11,.15);color:var(--yellow)}
+.cd-ok{background:rgba(34,197,94,.12);color:var(--green)}
+.cd-past{background:rgba(239,68,68,.1);color:var(--red)}
+.ta{display:flex;gap:4px;opacity:0;transition:opacity var(--tr)}.ti:hover .ta{opacity:1}
+
+/* ===== POMODORO ===== */
+.pomw{max-width:420px;margin:0 auto;text-align:center}
+.pmt{display:flex;gap:8px;justify-content:center;margin-bottom:28px}
+.ptab{border:1px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);border-radius:99px;padding:6px 18px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all var(--tr);font-family:var(--fb)}
+.ptab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pclk{position:relative;width:220px;height:220px;margin:0 auto 28px}
+.psvg{width:100%;height:100%;transform:rotate(-90deg)}
+.ptr{fill:none;stroke:var(--border);stroke-width:8}
+.ppr{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.ptl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ptm{font-family:var(--ft);font-size:2.8rem;font-weight:800;letter-spacing:-2px;line-height:1}
+.pph{font-size:.78rem;color:var(--text-secondary);margin-top:4px}
+.pctl{display:flex;gap:12px;justify-content:center;margin-bottom:24px}
+.pb{width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
+.pb-p{background:var(--accent);color:#fff;box-shadow:0 0 16px var(--accent-glow)}.pb-p:hover{filter:brightness(1.1);transform:scale(1.07)}
+.pb-s{background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border)}.pb-s:hover{color:var(--text-primary)}
+.pset{display:flex;gap:12px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.psi{text-align:center}.psi label{font-size:.72rem;color:var(--text-muted);display:block;margin-bottom:4px}
+.psi input{width:60px;text-align:center;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-primary);border-radius:var(--r-sm);padding:5px;font-size:.88rem;font-family:var(--fb);outline:none}
+.psi input:focus{border-color:var(--accent)}
+.phi{text-align:left}
+.phit{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-subtle);font-size:.84rem;color:var(--text-secondary)}
+.phd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ===== CALENDAR ===== */
+.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.calm{font-family:var(--ft);font-size:1.1rem;font-weight:700}
+.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cald{text-align:center;font-size:.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;padding:6px 0}
+.calday{border-radius:var(--r-sm);display:flex;flex-direction:column;align-items:flex-start;padding:4px 5px;font-size:.78rem;cursor:pointer;transition:background var(--tr);position:relative;min-height:70px;border:1px solid transparent}
+.calday:hover{background:var(--bg-hover);border-color:var(--border)}
+.calday.today{background:var(--accent-soft);border-color:var(--accent)}
+.calday.today .cdn{background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.72rem}
+.calday.om{opacity:.3}
+.cdn{font-weight:600;font-size:.78rem;margin-bottom:2px;line-height:1.2}
+.cchip{width:100%;font-size:.6rem;font-weight:600;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.cevt{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-subtle)}
+.cedt{min-width:54px;text-align:center;background:var(--bg-elevated);border-radius:var(--r-sm);padding:5px 6px;font-size:.75rem;font-weight:700;color:var(--accent)}
+.ceinf{flex:1;min-width:0}
+.cetit{font-size:.9rem;font-weight:600}
+.cesub{font-size:.76rem;color:var(--text-muted);margin-top:2px}
+.cenote{font-size:.76rem;color:var(--text-secondary);margin-top:4px;padding:4px 8px;background:var(--bg-elevated);border-radius:var(--r-sm);border-left:2px solid var(--accent)}
+.cetime{font-size:.72rem;color:var(--cyan);margin-top:4px;display:flex;align-items:center;gap:4px}
+
+/* ===== BULLETIN ===== */
+.bheader{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.bcard{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px;transition:box-shadow var(--tr)}
+.bcard:hover{box-shadow:var(--sh-md)}
+.bch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--bg-elevated);border-bottom:1px solid var(--border)}
+.bcname{font-family:var(--ft);font-size:1rem;font-weight:700}
+.bccoef{font-size:.75rem;color:var(--text-muted)}
+.bcavg{font-family:var(--ft);font-size:1.1rem;font-weight:800;padding:4px 12px;border-radius:99px}
+.ag{background:rgba(34,197,94,.15);color:var(--green)}
+.am{background:rgba(245,158,11,.15);color:var(--yellow)}
+.ab{background:rgba(239,68,68,.12);color:var(--red)}
+.bgrades{padding:12px 18px;display:flex;flex-direction:column;gap:8px}
+.grow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-subtle)}
+.grow:last-child{border-bottom:none}
+.glbl{font-size:.82rem;flex:1;color:var(--text-secondary)}
+.gval{font-family:var(--ft);font-size:1rem;font-weight:700}
+.gcoef{font-size:.72rem;color:var(--text-muted);background:var(--bg-elevated);border-radius:99px;padding:2px 8px}
+.gbar{flex:2;max-width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.gbarfill{height:100%;border-radius:99px;transition:width .5s}
+.agrow{display:flex;gap:8px;flex-wrap:wrap;padding:10px 18px;background:var(--bg-elevated);border-top:1px solid var(--border)}
+.bacts{padding:10px 18px;display:flex;gap:8px;border-top:1px solid var(--border-subtle)}
+
+/* ===== QUIZ ===== */
+.qtabs{display:flex;gap:0;margin-bottom:24px;background:var(--bg-elevated);border-radius:var(--r-lg);padding:4px;width:fit-content}
+.qtab{border:none;background:transparent;color:var(--text-secondary);border-radius:var(--r-md);padding:8px 22px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all var(--tr);font-family:var(--fb)}
+.qtab.active{background:var(--accent);color:#fff;box-shadow:var(--sh-sm)}
+.qstart{max-width:520px;margin:0 auto;text-align:center}
+.qsi{width:72px;height:72px;background:var(--accent-soft);border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--accent)}
+.qss{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.qsb{border:2px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);border-radius:var(--r-md);padding:8px 18px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all var(--tr);font-family:var(--fb)}
+.qsb.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.lvlbdg{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:4px 14px;font-size:.82rem;font-weight:700;margin-bottom:12px}
+.qcard{max-width:560px;margin:0 auto}
+.qprog{display:flex;gap:4px;margin-bottom:20px}
+.qpd{flex:1;height:5px;border-radius:99px;background:var(--border);transition:background var(--tr)}
+.qpd.done{background:var(--accent)}.qpd.correct{background:var(--green)}.qpd.wrong{background:var(--red)}
+.qq{font-family:var(--ft);font-size:1.15rem;font-weight:700;margin-bottom:20px;line-height:1.4}
+.qchs{display:flex;flex-direction:column;gap:10px}
+.qch{border:2px solid var(--border);background:var(--bg-surface);border-radius:var(--r-md);padding:12px 16px;cursor:pointer;font-size:.9rem;text-align:left;transition:all var(--tr);font-family:var(--fb);color:var(--text-primary);display:flex;align-items:center;gap:10px}
+.qch:hover:not(.lk){border-color:var(--accent);background:var(--accent-soft)}
+.qch.ok{border-color:var(--green);background:rgba(34,197,94,.1);color:var(--green)}
+.qch.ko{border-color:var(--red);background:rgba(239,68,68,.1);color:var(--red)}
+.qch.lk{cursor:default}
+.qexp{margin-top:16px;background:var(--bg-elevated);border-left:3px solid var(--accent);padding:12px 14px;border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:.86rem;color:var(--text-secondary);animation:fuA .2s ease}
+.qres{max-width:420px;margin:0 auto;text-align:center}
+.qsc{width:110px;height:110px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--pct)*1%),var(--border) 0);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.qsi2{width:86px;height:86px;border-radius:50%;background:var(--bg-surface);display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:1.4rem;font-weight:800}
+.elvls{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.elcard{border:2px solid var(--border);background:var(--bg-surface);border-radius:var(--r-lg);padding:16px;text-align:center;cursor:pointer;transition:all var(--tr);position:relative;overflow:hidden}
+.elcard:hover{border-color:var(--accent);background:var(--accent-soft)}
+.elcard.lkd{opacity:.45;cursor:not-allowed}.elcard.lkd:hover{border-color:var(--border);background:var(--bg-surface)}
+.elcard.cmp{border-color:var(--green);background:rgba(34,197,94,.07)}
+.elcard.cur{border-color:var(--accent);background:var(--accent-soft)}
+.elnum{font-family:var(--ft);font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.elname{font-size:.75rem;font-weight:600;color:var(--text-secondary)}
+.elstars{font-size:1rem;margin-top:6px}
+.elk{position:absolute;top:8px;right:8px;opacity:.6}
+
+/* ===== STATS ===== */
+.wch{display:flex;align-items:flex-end;gap:8px;height:100px}
+.wcbw{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.wcb{width:100%;min-height:4px;border-radius:var(--r-sm);background:var(--accent);opacity:.75;transition:opacity var(--tr)}.wcb:hover{opacity:1}
+.wcl{font-size:.68rem;color:var(--text-muted)}
+.str{display:flex;gap:5px;flex-wrap:wrap}
+.sd{width:28px;height:28px;border-radius:var(--r-sm);background:var(--border);transition:background var(--tr)}.sd.act{background:var(--accent)}
+.stg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stm{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;text-align:center}
+.stmv{font-family:var(--ft);font-size:1.6rem;font-weight:800}
+.stml{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+
+/* ===== GAMIF ===== */
+.bdgg{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+.bgi{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 10px;text-align:center;transition:all var(--tr)}
+.bgi.unl{border-color:var(--accent);background:var(--accent-soft)}.bgi:hover{box-shadow:var(--sh-md)}
+.bgico{font-size:1.8rem;margin-bottom:6px}
+.bgname{font-size:.72rem;font-weight:600;color:var(--text-secondary)}.bgi.unl .bgname{color:var(--accent)}
+.bglbl{font-size:.65rem;color:var(--text-muted)}
+
+/* ===== MODAL ===== */
+#mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center}
+#mo.open{display:flex}
+.modal{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:24px;width:90%;max-width:520px;max-height:90vh;overflow-y:auto;animation:fuA .2s ease;box-shadow:var(--sh-lg)}
+.mttl{font-family:var(--ft);font-size:1.1rem;font-weight:800;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.mft{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.fg{margin-bottom:14px}.fl{font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:5px;display:block}
+.fh{font-size:.72rem;color:var(--text-muted);margin-top:4px}
+
+/* ===== TOAST ===== */
+#tc{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:2000;pointer-events:none}
+.toast{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 16px;font-size:.84rem;font-weight:500;color:var(--text-primary);box-shadow:var(--sh-lg);display:flex;align-items:center;gap:10px;animation:sI .25s ease;pointer-events:all}
+.toast.s{border-left:3px solid var(--green)}.toast.e{border-left:3px solid var(--red)}.toast.i{border-left:3px solid var(--accent)}
+@keyframes sI{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.empty{text-align:center;padding:40px 24px;color:var(--text-muted)}
+.empty p{font-size:.9rem}
+#mob-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
+@media(max-width:600px){#mob-ov.open{display:block}}
+/* Notif */
+.nbanner{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--bg-elevated);border:1px solid var(--accent);border-radius:var(--r-lg);padding:12px 20px;box-shadow:var(--sh-lg);z-index:3000;display:flex;align-items:center;gap:12px;animation:fuA .3s ease;max-width:400px;width:90%}
+</style>
+</head>
+<body>
+
+<div id="ob-screen">
+  <div class="ob-card">
+    <div class="ob-logo"><i data-lucide="zap" style="color:#fff;width:28px;height:28px;"></i></div>
+    <h2 style="font-family:var(--ft);font-size:1.6rem;font-weight:800;margin-bottom:6px;">Bienvenue sur StudyFlow</h2>
+    <p style="color:var(--text-secondary);font-size:.9rem;margin-bottom:28px;">Crée ton profil pour personnaliser ton expérience</p>
+    <div class="ob-step active" id="obs1">
+      <div class="fg" style="text-align:left;"><label class="fl">Ton prénom *</label><input class="ifield" style="width:100%;" id="ob-n" placeholder="Ex : Lucas"/></div>
+      <div class="fg" style="text-align:left;"><label class="fl">Nom d'utilisateur *</label><input class="ifield" style="width:100%;" id="ob-u" placeholder="Ex : lucas_study"/></div>
+      <div class="fg" style="text-align:left;"><label class="fl">Âge</label><input class="ifield" style="width:100%;" type="number" id="ob-a" placeholder="Ex : 17" min="10" max="30"/></div>
+      <div class="fg" style="text-align:left;"><label class="fl">Niveau d'études</label>
+        <select class="ifield" style="width:100%;" id="ob-l">
+          <option value="college3">3ème (Collège)</option><option value="seconde">2nde</option>
+          <option value="premiere" selected>1ère</option><option value="terminale">Terminale</option>
+          <option value="prepa1">Prépa 1A</option><option value="prepa2">Prépa 2A</option>
+          <option value="L1">Licence 1</option><option value="L2">Licence 2</option>
+          <option value="L3">Licence 3</option><option value="M1">Master 1</option><option value="M2">Master 2</option>
+        </select>
+      </div>
+      <button class="btn bp" style="width:100%;justify-content:center;padding:12px;" onclick="OB.next()">Continuer <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></button>
+    </div>
+    <div class="ob-step" id="obs2">
+      <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
+      <div id="ob-conf" style="font-size:.95rem;color:var(--text-secondary);margin-bottom:24px;"></div>
+      <button class="btn bp" style="width:100%;justify-content:center;padding:12px;" onclick="OB.finish()">C'est parti ! <i data-lucide="zap" style="width:16px;height:16px;"></i></button>
+    </div>
+  </div>
+</div>
+
+<div id="mo"><div class="modal" id="mc"></div></div>
+<div id="tc"></div>
+<div id="nb" style="display:none;" class="nbanner">
+  <i data-lucide="bell" style="width:20px;height:20px;color:var(--accent);flex-shrink:0;"></i>
+  <div><div style="font-weight:700;font-size:.9rem;" id="nb-t"></div><div style="font-size:.78rem;color:var(--text-secondary);" id="nb-s"></div></div>
+  <button class="ib" onclick="document.getElementById('nb').style.display='none'" style="margin-left:auto;flex-shrink:0;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+</div>
+<div id="mob-ov" onclick="App.closeSidebar()"></div>
+
+<div id="app">
+  <nav id="sidebar">
+    <div class="slg" onclick="App.toggleSidebar()">
+      <div class="slg-icon"><i data-lucide="zap" style="color:#fff;width:16px;height:16px;"></i></div>
+      <span class="slg-txt">StudyFlow</span>
+    </div>
+    <div class="ss">
+      <div class="ss-label">Principal</div>
+      <div class="ni active" data-p="dashboard" onclick="App.go('dashboard')"><i data-lucide="layout-dashboard"></i><span>Tableau de bord</span></div>
+      <div class="ni" data-p="tasks" onclick="App.go('tasks')"><i data-lucide="check-square"></i><span>Tâches</span><span class="nb2" id="badge-t" style="margin-left:auto;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:99px;line-height:1.6;flex-shrink:0;display:none;">0</span></div>
+      <div class="ni" data-p="pomodoro" onclick="App.go('pomodoro')"><i data-lucide="timer"></i><span>Pomodoro</span></div>
+      <div class="ni" data-p="calendar" onclick="App.go('calendar')"><i data-lucide="calendar"></i><span>Calendrier</span></div>
+    </div>
+    <div class="ss">
+      <div class="ss-label">Apprentissage</div>
+      <div class="ni" data-p="quiz" onclick="App.go('quiz')"><i data-lucide="brain"></i><span>Quiz &amp; Exercices</span></div>
+      <div class="ni" data-p="notes" onclick="App.go('notes')"><i data-lucide="book-open"></i><span>Bulletin de notes</span></div>
+      <div class="ni" data-p="stats" onclick="App.go('stats')"><i data-lucide="bar-chart-2"></i><span>Statistiques</span></div>
+    </div>
+    <div class="ss">
+      <div class="ss-label">Progression</div>
+      <div class="ni" data-p="gamif" onclick="App.go('gamif')"><i data-lucide="trophy"></i><span>Badges &amp; XP</span></div>
+    </div>
+    <div class="xpw">
+      <div class="xpl"><span id="xpl-l">Niveau 1</span><span id="xpl-v">0/200 XP</span></div>
+      <div class="xpt"><div class="xpf" id="xpf" style="width:0%"></div></div>
+    </div>
+    <div class="sf">
+      <div class="ni" onclick="App.settings()"><i data-lucide="settings"></i><span>Paramètres</span></div>
+    </div>
+  </nav>
+
+  <div id="main">
+    <header id="topbar">
+      <button class="ib" onclick="App.toggleSidebar()"><i data-lucide="menu" style="width:18px;height:18px;"></i></button>
+      <div class="tbt" id="tbt">Tableau de bord</div>
+      <div class="tba">
+        <button class="ib" onclick="App.toggleTheme()" id="thbtn"><i data-lucide="moon" style="width:17px;height:17px;"></i></button>
+        <div class="av" id="avbtn" onclick="App.settings()">E</div>
+      </div>
+    </header>
+    <main id="content">
+
+<div class="panel active" id="panel-dashboard">
+  <div class="gbanner"><div class="gname" id="gname">Bon courage ! 👋</div><div class="gquote" id="gquote"></div><div class="gdate" id="gdate"></div></div>
+  <div class="g4" style="margin-bottom:20px;" id="dash-stats"></div>
+  <div class="g2">
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:var(--accent-soft);color:var(--accent);"><i data-lucide="check-square" style="width:16px;height:16px;"></i></div>Tâches du jour</div><div id="ttl"></div></div>
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:rgba(245,158,11,.12);color:var(--yellow);"><i data-lucide="flame" style="width:16px;height:16px;"></i></div>Défis quotidiens</div><div id="dcd"></div></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-tasks">
+  <div class="stitle">Mes tâches</div>
+  <div class="ssub">Le compteur de jours restants s'affiche sur chaque tâche avec date limite.</div>
+  <div class="atf">
+    <input class="ifield grow" id="ti" placeholder="Ajouter une tâche…" onkeydown="if(event.key==='Enter')TM.add()"/>
+    <select class="ifield" id="ts"><option>Maths</option><option>Physique</option><option>Français</option><option>Histoire</option><option>SVT</option><option>Anglais</option><option>Informatique</option><option>Autre</option></select>
+    <select class="ifield" id="tp"><option value="low">Faible</option><option value="medium" selected>Moyenne</option><option value="high">Haute</option></select>
+    <input type="date" class="ifield" id="td"/>
+    <button class="btn bp" onclick="TM.add()"><i data-lucide="plus" style="width:15px;height:15px;"></i>Ajouter</button>
+  </div>
+  <div class="tf">
+    <button class="fb active" onclick="TM.filter('all',this)">Toutes</button>
+    <button class="fb" onclick="TM.filter('todo',this)">À faire</button>
+    <button class="fb" onclick="TM.filter('done',this)">Terminées</button>
+    <button class="fb" onclick="TM.filter('high',this)">🔴 Urgentes</button>
+    <button class="fb" onclick="TM.filter('today',this)">Aujourd'hui</button>
+  </div>
+  <div class="tl" id="task-list"></div>
+</div>
+
+<div class="panel" id="panel-pomodoro">
+  <div class="stitle">Timer Pomodoro</div><div class="ssub">Sessions de travail concentré.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+    <div class="card">
+      <div class="pomw">
+        <div class="pmt">
+          <button class="ptab active" id="pt-w" onclick="Pom.mode('work')">Travail</button>
+          <button class="ptab" id="pt-s" onclick="Pom.mode('short')">Petite pause</button>
+          <button class="ptab" id="pt-l" onclick="Pom.mode('long')">Grande pause</button>
+        </div>
+        <div class="pclk">
+          <svg class="psvg" viewBox="0 0 100 100"><circle class="ptr" cx="50" cy="50" r="44"/><circle class="ppr" cx="50" cy="50" r="44" id="pcirc" stroke-dasharray="276.46" stroke-dashoffset="0"/></svg>
+          <div class="ptl"><div class="ptm" id="pdisp">25:00</div><div class="pph" id="pphl">Session de travail</div></div>
+        </div>
+        <div class="pctl">
+          <button class="pb pb-s" onclick="Pom.reset()"><i data-lucide="rotate-ccw" style="width:18px;height:18px;"></i></button>
+          <button class="pb pb-p" onclick="Pom.toggle()" id="pbtn"><i data-lucide="play" style="width:22px;height:22px;"></i></button>
+          <button class="pb pb-s" onclick="Pom.skip()"><i data-lucide="skip-forward" style="width:18px;height:18px;"></i></button>
+        </div>
+        <div class="pset">
+          <div class="psi"><label>Travail (min)</label><input type="number" id="pwd" value="25" min="1" max="60" onchange="Pom.updSet()"/></div>
+          <div class="psi"><label>Petite pause</label><input type="number" id="psd" value="5" min="1" max="30" onchange="Pom.updSet()"/></div>
+          <div class="psi"><label>Grande pause</label><input type="number" id="pld" value="15" min="1" max="60" onchange="Pom.updSet()"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:var(--accent-soft);color:var(--accent);"><i data-lucide="history" style="width:16px;height:16px;"></i></div>Historique</div><div id="phist" class="phi"></div></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-calendar">
+  <div class="stitle">Calendrier</div><div class="ssub">Examens, contrôles, révisions avec heure et notification.</div>
+  <div class="g2" style="align-items:start;">
+    <div class="card">
+      <div class="calh">
+        <button class="ib" onclick="Cal.prev()"><i data-lucide="chevron-left" style="width:18px;height:18px;"></i></button>
+        <div class="calm" id="cal-m"></div>
+        <button class="ib" onclick="Cal.next()"><i data-lucide="chevron-right" style="width:18px;height:18px;"></i></button>
+      </div>
+      <div class="calg" id="cal-grid"></div>
+    </div>
+    <div class="card">
+      <div class="ctitle" style="justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:8px;"><div class="cticn" style="background:rgba(6,182,212,.12);color:var(--cyan);"><i data-lucide="calendar-plus" style="width:16px;height:16px;"></i></div>Événements</span>
+        <button class="btn bp" style="padding:6px 12px;" onclick="Cal.openAdd()"><i data-lucide="plus" style="width:14px;height:14px;"></i>Ajouter</button>
+      </div>
+      <div id="cal-evts"></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-quiz">
+  <div class="stitle">Quiz &amp; Exercices</div>
+  <div class="ssub">Quiz d'échauffement · Exercices progressifs avec niveaux sauvegardés.</div>
+  <div class="qtabs">
+    <button class="qtab active" id="qt-q" onclick="QM.tab('quiz')">🧠 Quiz</button>
+    <button class="qtab" id="qt-e" onclick="QM.tab('exo')">⚡ Exercices</button>
+  </div>
+  <div id="quiz-area"></div>
+</div>
+
+<div class="panel" id="panel-notes">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+    <div class="stitle">Bulletin de notes</div>
+    <button class="btn bp" onclick="BN.openAdd()"><i data-lucide="plus" style="width:14px;height:14px;"></i>Nouvelle matière</button>
+  </div>
+  <div class="ssub">Saisis tes notes par devoir avec coefficients — moyenne calculée automatiquement.</div>
+  <div id="bulletin"></div>
+</div>
+
+<div class="panel" id="panel-stats">
+  <div class="stitle">Statistiques</div><div class="ssub">Ton activité mesurée en temps réel.</div>
+  <div class="stg" id="stg"></div>
+  <div class="g2">
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:var(--accent-soft);color:var(--accent);"><i data-lucide="bar-chart" style="width:16px;height:16px;"></i></div>Pomodoro — 7 jours</div><div class="wch" id="wch"></div></div>
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:rgba(34,197,94,.12);color:var(--green);"><i data-lucide="flame" style="width:16px;height:16px;"></i></div>Activité 28 jours</div><div class="str" id="strd"></div></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-gamif">
+  <div class="stitle">Badges &amp; Progression</div><div class="ssub">XP, niveaux et récompenses.</div>
+  <div class="g2" style="margin-bottom:20px;align-items:start;">
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:rgba(245,158,11,.12);color:var(--yellow);"><i data-lucide="zap" style="width:16px;height:16px;"></i></div>Ton niveau</div><div id="lvld"></div></div>
+    <div class="card"><div class="ctitle"><div class="cticn" style="background:var(--accent-soft);color:var(--accent);"><i data-lucide="list-checks" style="width:16px;height:16px;"></i></div>Défis quotidiens</div><div id="dcf"></div></div>
+  </div>
+  <div class="card"><div class="ctitle"><div class="cticn" style="background:rgba(236,72,153,.12);color:var(--pink);"><i data-lucide="award" style="width:16px;height:16px;"></i></div>Mes badges</div><div class="bdgg" id="bdgg"></div></div>
+</div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   UTILS
+============================================================ */
+const $=(s,c=document)=>c.querySelector(s);
+const $$=(s,c=document)=>[...c.querySelectorAll(s)];
+const ST={
+  g:(k,d=null)=>{try{const v=localStorage.getItem('sf_'+k);return v?JSON.parse(v):d}catch{return d}},
+  s:(k,v)=>{try{localStorage.setItem('sf_'+k,JSON.stringify(v))}catch{}}
+};
+const Toast={
+  show(msg,t='i',d=3000){
+    const el=document.createElement('div');
+    el.className=`toast ${t}`;
+    el.innerHTML=`<i data-lucide="${{s:'check-circle',e:'x-circle',i:'info'}[t]||'info'}" style="width:16px;height:16px;flex-shrink:0;"></i>${msg}`;
+    $('#tc').appendChild(el);
+    lucide.createIcons({nodes:[el]});
+    setTimeout(()=>{el.style.cssText+='opacity:0;transform:translateX(20px);transition:all .3s';setTimeout(()=>el.remove(),300)},d);
+  }
+};
+const M={
+  open(h){$('#mc').innerHTML=h;$('#mo').classList.add('open');lucide.createIcons({nodes:[$('#mc')]})},
+  close(){$('#mo').classList.remove('open')}
+};
+$('#mo').addEventListener('click',e=>{if(e.target===$('#mo'))M.close()});
+const QT=['Le succès, c\'est tomber sept fois et se relever huit.','Un voyage de mille lieues commence par un seul pas.','Le génie c\'est 1% d\'inspiration et 99% de transpiration.','La persévérance est la clé du succès.','Chaque expert a un jour été un débutant.','Investir dans sa connaissance rapporte toujours les meilleurs intérêts.'];
+
+/* ============================================================
+   ONBOARDING
+============================================================ */
+const OB={
+  init(){
+    const p=ST.g('profile');
+    if(p){$('#ob-screen').style.display='none';return;}
+    $('#ob-screen').style.display='flex';
+    lucide.createIcons({nodes:[$('#ob-screen')]});
+  },
+  next(){
+    const n=$('#ob-n').value.trim(),u=$('#ob-u').value.trim();
+    if(!n||!u){Toast.show('Prénom et username requis','e');return;}
+    const a=$('#ob-a').value||'?',l=$('#ob-l').value;
+    const ll={college3:'3ème',seconde:'2nde',premiere:'1ère',terminale:'Terminale',prepa1:'Prépa 1A',prepa2:'Prépa 2A',L1:'Licence 1',L2:'Licence 2',L3:'Licence 3',M1:'Master 1',M2:'Master 2'};
+    $('#ob-conf').innerHTML=`Bonjour <strong>${n}</strong> (@${u})<br>${a} ans · ${ll[l]||l}<br><br>Ton profil est prêt ! 🚀`;
+    $('#obs1').classList.remove('active');$('#obs2').classList.add('active');
+    lucide.createIcons({nodes:[$('#obs2')]});
+  },
+  finish(){
+    ST.s('profile',{name:$('#ob-n').value.trim(),username:$('#ob-u').value.trim(),age:$('#ob-a').value,level:$('#ob-l').value,createdAt:new Date().toISOString()});
+    $('#ob-screen').style.display='none';
+    App.init();
+  }
+};
+
+/* ============================================================
+   APP
+============================================================ */
+const App={
+  cur:'dashboard',
+  init(){
+    const p=ST.g('profile');if(!p){OB.init();return;}
+    const sc=ST.g('sb_col',false);if(sc)$('#sidebar').classList.add('collapsed');
+    const th=ST.g('theme','dark');document.documentElement.setAttribute('data-theme',th);App.updThIcon(th);
+    $('#avbtn').textContent=p.name.charAt(0).toUpperCase();
+    lucide.createIcons();
+    App.go('dashboard');App.updXP();App.updTBadge();
+    App.startTimer();App.schedNotifs();
+  },
+  startTimer(){
+    this._ts=Date.now();
+    setInterval(()=>{ST.s('tt_today',Math.round((Date.now()-this._ts)/60000))},30000);
+    window.addEventListener('beforeunload',()=>{
+      const el=Math.round((Date.now()-this._ts)/60000);
+      ST.s('tt_total',(ST.g('tt_total',0)||0)+el);
+      const dk=new Date().toISOString().split('T')[0];
+      const dt=ST.g('dt',{});dt[dk]=(dt[dk]||0)+el;ST.s('dt',dt);
+    });
+  },
+  schedNotifs(){
+    const evts=ST.g('cal_evts',[]),now=new Date();
+    evts.forEach(e=>{
+      if(!e.time||!e.date)return;
+      const dt=new Date(e.date+'T'+e.time);
+      const diff=dt-now;
+      if(diff>0&&diff<3600000){
+        setTimeout(()=>{
+          const nb=$('#nb');
+          $('#nb-t').textContent='⏰ '+e.title;
+          $('#nb-s').textContent='Dans '+(Math.round(diff/60000)-5)+'min · '+(e.note||e.type||'');
+          nb.style.display='flex';lucide.createIcons({nodes:[nb]});
+          setTimeout(()=>nb.style.display='none',8000);
+        },Math.max(0,diff-300000));
+      }
+    });
+  },
+  go(p){
+    $$('.panel').forEach(x=>x.classList.remove('active'));
+    $$('.ni').forEach(x=>x.classList.remove('active'));
+    const el=$('#panel-'+p);if(el)el.classList.add('active');
+    $(`.ni[data-p="${p}"]`)?.classList.add('active');
+    this.cur=p;
+    const T={dashboard:'Tableau de bord',tasks:'Mes tâches',pomodoro:'Pomodoro',calendar:'Calendrier',quiz:'Quiz & Exercices',notes:'Bulletin de notes',stats:'Statistiques',gamif:'Badges & XP'};
+    $('#tbt').textContent=T[p]||p;
+    if(p==='dashboard')DB.render();
+    if(p==='tasks')TM.render();
+    if(p==='pomodoro')Pom.renderHist();
+    if(p==='calendar')Cal.render();
+    if(p==='quiz')QM.renderCur();
+    if(p==='notes')BN.render();
+    if(p==='stats')SV.render();
+    if(p==='gamif')GV.render();
+    if(window.innerWidth<=600)App.closeSidebar();
+  },
+  toggleSidebar(){
+    if(window.innerWidth<=600){const o=$('#sidebar').classList.toggle('mobile-open');$('#mob-ov').classList.toggle('open',o);}
+    else{const c=!$('#sidebar').classList.contains('collapsed');$('#sidebar').classList.toggle('collapsed',c);ST.s('sb_col',c);}
+    setTimeout(()=>lucide.createIcons(),200);
+  },
+  closeSidebar(){$('#sidebar').classList.remove('mobile-open');$('#mob-ov').classList.remove('open')},
+  toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);ST.s('theme',n);App.updThIcon(n)},
+  updThIcon(t){const b=$('#thbtn');b.innerHTML=t==='dark'?'<i data-lucide="sun" style="width:17px;height:17px;"></i>':'<i data-lucide="moon" style="width:17px;height:17px;"></i>';lucide.createIcons({nodes:[b]})},
+  updXP(){const x=ST.g('xp',0),l=Math.floor(x/200)+1,p=((x%200)/200)*100;$('#xpl-l').textContent='Niveau '+l;$('#xpl-v').textContent=(x%200)+'/200 XP';$('#xpf').style.width=p+'%'},
+  updTBadge(){const t=ST.g('tasks',[]).filter(x=>!x.done).length;const b=$('#badge-t');b.textContent=t;b.style.display=t>0?'':'none'},
+  addXP(a){
+    const p=ST.g('xp',0),n=p+a;ST.s('xp',n);
+    const pl=Math.floor(p/200)+1,nl=Math.floor(n/200)+1;
+    if(nl>pl)Toast.show('🎉 Niveau '+nl+' !','s',4000);else Toast.show('+'+a+' XP','i',1800);
+    App.updXP();Badges.check();
+  },
+  settings(){
+    const p=ST.g('profile',{name:'Étudiant',username:'',age:'',level:'premiere'});
+    const ll={college3:'3ème',seconde:'2nde',premiere:'1ère',terminale:'Terminale',prepa1:'Prépa 1A',prepa2:'Prépa 2A',L1:'Licence 1',L2:'Licence 2',L3:'Licence 3',M1:'Master 1',M2:'Master 2'};
+    M.open(`<div class="mttl">Paramètres <button class="ib" onclick="M.close()" style="width:28px;height:28px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button></div>
+      <div class="fg"><label class="fl">Prénom</label><input class="ifield" style="width:100%;" id="sn" value="${p.name}"/></div>
+      <div class="fg"><label class="fl">Username</label><input class="ifield" style="width:100%;" id="su" value="${p.username}"/></div>
+      <div class="fg"><label class="fl">Âge</label><input class="ifield" style="width:100%;" type="number" id="sa" value="${p.age}"/></div>
+      <div class="fg"><label class="fl">Niveau</label><select class="ifield" style="width:100%;" id="sl">${Object.entries(ll).map(([k,v])=>`<option value="${k}" ${k===p.level?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="mft"><button class="btn bg" onclick="M.close()">Annuler</button><button class="btn bp" onclick="App.saveSett()">Sauvegarder</button></div>`);
+  },
+  saveSett(){
+    const p=ST.g('profile',{});
+    p.name=$('#sn').value.trim()||p.name;p.username=$('#su').value.trim();p.age=$('#sa').value;p.level=$('#sl').value;
+    ST.s('profile',p);$('#avbtn').textContent=p.name.charAt(0).toUpperCase();M.close();Toast.show('Sauvegardé !','s');DB.render();
+  }
+};
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+const DB={
+  render(){
+    const p=ST.g('profile',{name:'Étudiant'});
+    const h=new Date().getHours();const g=h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+    $('#gname').textContent=g+', '+p.name+' ! 👋';
+    $('#gquote').textContent='"'+QT[Math.floor(Math.random()*QT.length)]+'"';
+    $('#gdate').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const tasks=ST.g('tasks',[]),ps=ST.g('pom_s',[]),xp=ST.g('xp',0),str=DB.streak();
+    const tmin=ps.filter(s=>s.t==='work').reduce((a,s)=>a+s.dur,0);
+    const td=new Date().toDateString();
+    const dtd=tasks.filter(t=>t.done&&t.cat&&new Date(t.cat).toDateString()===td).length;
+    $('#dash-stats').innerHTML=[
+      DB.sc('timer','Pomodoro',Math.floor(tmin/60)+'h'+(tmin%60)+'m','rgba(108,99,255,.15)','var(--accent)','Ce mois'),
+      DB.sc('check-circle','Tâches faites',tasks.filter(t=>t.done).length,'rgba(34,197,94,.12)','var(--green)',dtd+' auj.'),
+      DB.sc('zap','Points XP',xp,'rgba(245,158,11,.12)','var(--yellow)','Niv.'+(Math.floor(xp/200)+1)),
+      DB.sc('flame','Série',str+' j.','rgba(239,68,68,.12)','var(--red)','Continue !')
+    ].join('');
+    lucide.createIcons({nodes:[$('#dash-stats')]});
+    const tt=tasks.filter(t=>!t.done).slice(0,5);
+    $('#ttl').innerHTML=tt.length?tt.map(t=>`<div class="tti" onclick="TM.toggle('${t.id}');DB.render()"><div class="ttcb ${t.done?'chk':''}"></div><span style="flex:1;font-size:.88rem;">${t.title}</span><span class="pill ps" style="font-size:.65rem;">${t.subject}</span></div>`).join(''):'<div class="empty"><p>✅ Rien en attente !</p></div>';
+    DB.renderDC('#dcd');
+    lucide.createIcons({nodes:[$('#panel-dashboard')]});
+  },
+  sc(ic,lb,val,bg,col,dt){return`<div class="scard"><div class="sicn" style="background:${bg};color:${col};"><i data-lucide="${ic}" style="width:18px;height:18px;"></i></div><div class="sval">${val}</div><div class="slabel">${lb}</div><div class="sdelta">${dt}</div></div>`},
+  streak(){
+    const s=ST.g('streak',{count:0,last:null}),td=new Date().toDateString();
+    if(s.last===td)return s.count;
+    const yd=new Date();yd.setDate(yd.getDate()-1);
+    if(s.last===yd.toDateString()){const u={count:s.count+1,last:td};ST.s('streak',u);return u.count;}
+    const r={count:1,last:td};ST.s('streak',r);return 1;
+  },
+  renderDC(sel){
+    const ch=DC.get();const dn=ch.filter(c=>c.done).length;const pct=Math.round((dn/ch.length)*100);
+    $(sel).innerHTML=`<div style="display:flex;justify-content:space-between;font-size:.82rem;color:var(--text-secondary);margin-bottom:8px;"><span>${dn}/${ch.length} défis</span><span style="color:var(--accent);font-weight:700;">${pct}%</span></div>
+      <div style="height:6px;background:var(--border);border-radius:99px;margin-bottom:12px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--accent);border-radius:99px;"></div></div>
+      <div>${ch.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:.84rem;color:${c.done?'var(--green)':'var(--text-secondary)'};${c.done?'text-decoration:line-through;':''}"><div style="width:16px;height:16px;border-radius:4px;background:${c.done?'var(--green)':'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:.65rem;">${c.done?'✓':''}</div>${c.label}</div>`).join('')}</div>`;
+  }
+};
+
+/* ============================================================
+   TASKS
+============================================================ */
+const TM={
+  cf:'all',
+  add(){
+    const t=$('#ti').value.trim();if(!t){Toast.show('Titre requis','e');return;}
+    const tasks=ST.g('tasks',[]);
+    tasks.unshift({id:Date.now()+'',title:t,subject:$('#ts').value,priority:$('#tp').value,due:$('#td').value,done:false,created:new Date().toISOString()});
+    ST.s('tasks',tasks);$('#ti').value='';TM.render();App.updTBadge();App.addXP(5);DC.upd('add_task');Toast.show('Tâche ajoutée !','s');
+  },
+  toggle(id){
+    const tasks=ST.g('tasks',[]),t=tasks.find(x=>x.id===id);if(!t)return;
+    t.done=!t.done;if(t.done){t.cat=new Date().toISOString();App.addXP(10);DC.upd('complete_task');}else delete t.cat;
+    ST.s('tasks',tasks);TM.render();App.updTBadge();Badges.check();
+  },
+  del(id){ST.s('tasks',ST.g('tasks',[]).filter(t=>t.id!==id));TM.render();App.updTBadge();Toast.show('Supprimée','i')},
+  filter(f,btn){this.cf=f;$$('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');TM.render()},
+  filtered(){
+    let t=ST.g('tasks',[]);
+    const tod=new Date().toISOString().split('T')[0];
+    if(this.cf==='todo')return t.filter(x=>!x.done);
+    if(this.cf==='done')return t.filter(x=>x.done);
+    if(this.cf==='high')return t.filter(x=>x.priority==='high'&&!x.done);
+    if(this.cf==='today')return t.filter(x=>x.due===tod||(!x.due&&!x.done));
+    return t;
+  },
+  cd(due){
+    if(!due)return null;
+    const n=new Date();n.setHours(0,0,0,0);
+    const d=new Date(due+'T00:00:00');
+    const df=Math.round((d-n)/86400000);
+    if(df<0)return{t:Math.abs(df)+'j de retard',c:'cd-past'};
+    if(df===0)return{t:"Aujourd'hui",c:'cd-urg'};
+    if(df===1)return{t:'Demain',c:'cd-urg'};
+    if(df<=3)return{t:'Dans '+df+'j',c:'cd-soon'};
+    return{t:'Dans '+df+'j',c:'cd-ok'};
+  },
+  render(){
+    const tasks=TM.filtered(),l=$('#task-list');
+    if(!tasks.length){l.innerHTML='<div class="empty"><p>Aucune tâche ici !</p></div>';return;}
+    const pm={low:'Faible',medium:'Moyenne',high:'Haute'};
+    l.innerHTML=tasks.map(t=>{
+      const cd=TM.cd(t.due);
+      return`<div class="ti ${t.done?'done':''}">
+        <div class="tcb ${t.done?'chk':''}" onclick="TM.toggle('${t.id}')">${t.done?'<i data-lucide="check" style="width:12px;height:12px;color:#fff;"></i>':''}</div>
+        <div class="tb">
+          <div class="tn ${t.done?'done':''}">${t.title}</div>
+          <div class="tmeta">
+            <span class="pill ps">${t.subject}</span>
+            <span class="pill p${t.priority.charAt(0)}">${pm[t.priority]}</span>
+            ${t.due?`<span class="tdl">${new Date(t.due+'T00:00:00').toLocaleDateString('fr-FR')}</span>`:''}
+            ${cd?`<span class="tcd ${cd.c}">${cd.t}</span>`:''}
+          </div>
+        </div>
+        <div class="ta">
+          <button class="ib" onclick="TM.edit('${t.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>
+          <button class="ib" onclick="TM.del('${t.id}')" style="color:var(--red);"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+    lucide.createIcons({nodes:[l]});
+  },
+  edit(id){
+    const t=ST.g('tasks',[]).find(x=>x.id===id);if(!t)return;
+    M.open(`<div class="mttl">Modifier <button class="ib" onclick="M.close()" style="width:28px;height:28px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button></div>
+      <div class="fg"><label class="fl">Titre</label><input class="ifield" style="width:100%;" id="et" value="${t.title}"/></div>
+      <div class="fg"><label class="fl">Matière</label><select class="ifield" style="width:100%;" id="es">${['Maths','Physique','Français','Histoire','SVT','Anglais','Informatique','Autre'].map(s=>`<option ${s===t.subject?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Priorité</label><select class="ifield" style="width:100%;" id="ep"><option value="low" ${t.priority==='low'?'selected':''}>Faible</option><option value="medium" ${t.priority==='medium'?'selected':''}>Moyenne</option><option value="high" ${t.priority==='high'?'selected':''}>Haute</option></select></div>
+      <div class="fg"><label class="fl">Date limite</label><input type="date" class="ifield" style="width:100%;" id="ed" value="${t.due||''}"/></div>
+      <div class="mft"><button class="btn bg" onclick="M.close()">Annuler</button><button class="btn bp" onclick="TM.saveEdit('${id}')">Sauvegarder</button></div>`);
+  },
+  saveEdit(id){
+    const tasks=ST.g('tasks',[]),t=tasks.find(x=>x.id===id);if(!t)return;
+    t.title=$('#et').value.trim()||t.title;t.subject=$('#es').value;t.priority=$('#ep').value;t.due=$('#ed').value;
+    ST.s('tasks',tasks);M.close();TM.render();Toast.show('Modifiée !','s');
+  }
+};
+
+/* ============================================================
+   POMODORO
+============================================================ */
+const Pom={
+  m:'work',run:false,iv:null,rem:25*60,tot:25*60,
+  dur(){return{work:parseInt($('#pwd').value||25)*60,short:parseInt($('#psd').value||5)*60,long:parseInt($('#pld').value||15)*60}},
+  mode(m){this.m=m;this.reset();$$('.ptab').forEach(t=>t.classList.remove('active'));$(`#pt-${m==='work'?'w':m==='short'?'s':'l'}`).classList.add('active');$('#pphl').textContent={work:'Session de travail',short:'Petite pause',long:'Grande pause'}[m]},
+  toggle(){if(this.run)this.pause();else this.start()},
+  start(){
+    this.run=true;const b=$('#pbtn');b.innerHTML='<i data-lucide="pause" style="width:22px;height:22px;"></i>';lucide.createIcons({nodes:[b]});
+    this.iv=setInterval(()=>{this.rem--;this.upd();if(this.rem<=0)this.done()},1000);
+  },
+  pause(){
+    this.run=false;clearInterval(this.iv);const b=$('#pbtn');b.innerHTML='<i data-lucide="play" style="width:22px;height:22px;"></i>';lucide.createIcons({nodes:[b]});
+  },
+  reset(){this.pause();this.tot=this.dur()[this.m];this.rem=this.tot;this.upd()},
+  skip(){this.done()},
+  done(){
+    this.pause();
+    const ss=ST.g('pom_s',[]);
+    ss.push({t:this.m,dur:Math.round((this.tot-this.rem)/60),tot:Math.round(this.tot/60),at:new Date().toISOString()});
+    ST.s('pom_s',ss);this.renderHist();
+    if(this.m==='work'){App.addXP(15);DC.upd('pomodoro');Toast.show('🎉 Session terminée !','s',4000);}
+    else Toast.show('Pause terminée !','i');
+    if(this.m==='work')this.mode('short');else this.mode('work');
+  },
+  upd(){
+    const m=Math.floor(this.rem/60).toString().padStart(2,'0'),s=(this.rem%60).toString().padStart(2,'0');
+    $('#pdisp').textContent=m+':'+s;
+    $('#pcirc').style.strokeDashoffset=276.46*(1-this.rem/this.tot);
+    $('#pcirc').style.stroke={work:'var(--accent)',short:'var(--green)',long:'var(--cyan)'}[this.m];
+  },
+  updSet(){this.reset()},
+  renderHist(){
+    const el=$('#phist');if(!el)return;
+    const ss=ST.g('pom_s',[]).slice(-8).reverse();
+    if(!ss.length){el.innerHTML='<div class="empty" style="padding:24px;"><p>Aucune session.</p></div>';return;}
+    const cl={work:'var(--accent)',short:'var(--green)',long:'var(--cyan)'};
+    const lb={work:'Travail',short:'Petite pause',long:'Grande pause'};
+    el.innerHTML=ss.map(s=>`<div class="phit"><div class="phd" style="background:${cl[s.t]};"></div><span style="flex:1;">${lb[s.t]}</span><span>${s.dur} min</span><span style="font-size:.72rem;color:var(--text-muted);margin-left:8px;">${new Date(s.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('');
+  }
+};
+
+/* ============================================================
+   CALENDAR
+============================================================ */
+const EC={exam:'#ef4444',controle:'#f59e0b',revision:'#6c63ff',autre:'#06b6d4'};
+const Cal={
+  y:new Date().getFullYear(),mo:new Date().getMonth(),
+  render(){Cal.grid();Cal.evtList()},
+  grid(){
+    const mn=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    $('#cal-m').textContent=mn[Cal.mo]+' '+Cal.y;
+    const evts=ST.g('cal_evts',[]);
+    const fd=new Date(Cal.y,Cal.mo,1).getDay();
+    const off=fd===0?6:fd-1;
+    const dim=new Date(Cal.y,Cal.mo+1,0).getDate();
+    const pdim=new Date(Cal.y,Cal.mo,0).getDate();
+    const td=new Date();
+    let h=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d=>`<div class="cald">${d}</div>`).join('');
+    for(let i=0;i<off;i++)h+=`<div class="calday om"><span class="cdn">${pdim-off+i+1}</span></div>`;
+    for(let d=1;d<=dim;d++){
+      const it=td.getDate()===d&&td.getMonth()===Cal.mo&&td.getFullYear()===Cal.y;
+      const ds=Cal.y+'-'+String(Cal.mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const de=evts.filter(e=>e.date===ds);
+      const chips=de.slice(0,3).map(e=>`<div class="cchip" style="background:${EC[e.type]||'var(--accent)'}22;color:${EC[e.type]||'var(--accent)'};">${e.title}</div>`).join('');
+      h+=`<div class="calday ${it?'today':''}" onclick="Cal.openAdd('${ds}')"><span class="cdn">${d}</span>${chips}</div>`;
+    }
+    const r=42-off-dim;for(let i=1;i<=r&&r<7;i++)h+=`<div class="calday om"><span class="cdn">${i}</span></div>`;
+    $('#cal-grid').innerHTML=h;
+  },
+  evtList(){
+    const evts=ST.g('cal_evts',[]).filter(e=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===Cal.mo&&d.getFullYear()===Cal.y}).sort((a,b)=>a.date.localeCompare(b.date));
+    const el=$('#cal-evts');
+    if(!evts.length){el.innerHTML='<div class="empty"><p>Aucun événement ce mois.</p></div>';return;}
+    el.innerHTML=evts.map(e=>`
+      <div class="cevt">
+        <div class="cedt" style="color:${EC[e.type]||'var(--accent)'};">${new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</div>
+        <div class="ceinf" style="flex:1;">
+          <div class="cetit">${e.title}</div>
+          <div class="cesub">${e.type}${e.subject?' · '+e.subject:''}</div>
+          ${e.note?`<div class="cenote">${e.note}</div>`:''}
+          ${e.time?`<div class="cetime"><i data-lucide="clock" style="width:11px;height:11px;"></i>${e.time}</div>`:''}
+        </div>
+        <button class="ib" onclick="Cal.del('${e.id}')" style="color:var(--red);flex-shrink:0;"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+      </div>`).join('');
+    lucide.createIcons({nodes:[el]});
+  },
+  prev(){Cal.mo--;if(Cal.mo<0){Cal.mo=11;Cal.y--;}Cal.render()},
+  next(){Cal.mo++;if(Cal.mo>11){Cal.mo=0;Cal.y++;}Cal.render()},
+  openAdd(date=''){
+    const td=date||new Date().toISOString().split('T')[0];
+    M.open(`<div class="mttl">Ajouter un événement <button class="ib" onclick="M.close()" style="width:28px;height:28px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button></div>
+      <div class="fg"><label class="fl">Titre *</label><input class="ifield" style="width:100%;" id="et2" placeholder="Ex : Examen de Maths"/></div>
+      <div class="fg"><label class="fl">Note (facultatif)</label><textarea class="ifield" style="width:100%;resize:none;height:64px;" id="en2" placeholder="Chapitres, salle, infos…"></textarea></div>
+      <div class="fg"><label class="fl">Type</label><select class="ifield" style="width:100%;" id="ety"><option value="exam">Examen</option><option value="controle">Contrôle</option><option value="revision">Révision</option><option value="autre">Autre</option></select></div>
+      <div class="fg"><label class="fl">Matière</label><select class="ifield" style="width:100%;" id="esub">${['Maths','Physique','Français','Histoire','SVT','Anglais','Informatique','Autre'].map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Date</label><input type="date" class="ifield" style="width:100%;" id="edt" value="${td}"/></div>
+      <div class="fg"><label class="fl">Heure exacte <span style="color:var(--text-muted);">(facultatif — pour notification)</span></label><input type="time" class="ifield" style="width:100%;" id="etm"/><div class="fh">🔔 Alerte 5 min avant</div></div>
+      <div class="mft"><button class="btn bg" onclick="M.close()">Annuler</button><button class="btn bp" onclick="Cal.save()">Ajouter</button></div>`);
+  },
+  save(){
+    const t=$('#et2').value.trim();if(!t){Toast.show('Titre requis','e');return;}
+    const evts=ST.g('cal_evts',[]);
+    evts.push({id:Date.now()+'',title:t,note:$('#en2').value.trim(),type:$('#ety').value,subject:$('#esub').value,date:$('#edt').value,time:$('#etm').value});
+    ST.s('cal_evts',evts);M.close();Cal.render();App.addXP(5);App.schedNotifs();Toast.show('Événement ajouté !','s');
+  },
+  del(id){ST.s('cal_evts',ST.g('cal_evts',[]).filter(e=>e.id!==id));Cal.evtList();Cal.grid();Toast.show('Supprimé','i')}
+};
+
+/* ============================================================
+   BULLETIN DE NOTES
+============================================================ */
+const BN={
+  render(){
+    const subs=ST.g('bulletin',[]);
+    const el=$('#bulletin');
+    if(!subs.length){el.innerHTML='<div class="empty"><i data-lucide="book-open" style="width:48px;height:48px;"></i><p>Aucune matière. Clique sur "Nouvelle matière".</p></div>';lucide.createIcons({nodes:[el]});return;}
+    let ws=0,wt=0;
+    subs.forEach(s=>{const a=BN.avg(s);if(a!==null){ws+=a*parseFloat(s.coef||1);wt+=parseFloat(s.coef||1);}});
+    const ga=wt>0?(ws/wt).toFixed(2):null;
+    const gc=ga===null?'var(--text-muted)':parseFloat(ga)>=10?'var(--green)':parseFloat(ga)>=7?'var(--yellow)':'var(--red)';
+    el.innerHTML=`
+      <div class="bheader">
+        <div>
+          <div style="font-size:.82rem;color:var(--text-muted);">Moyenne générale</div>
+          <div style="font-family:var(--ft);font-size:2.4rem;font-weight:800;color:${gc};">${ga!==null?ga+'/20':'—'}</div>
+          <div style="font-size:.78rem;color:var(--text-muted);">${wt>0?wt+' coefficients au total':''}</div>
+        </div>
+        <div style="background:${ga!==null?'linear-gradient(120deg,var(--accent),var(--cyan))':'var(--bg-elevated)'};border-radius:var(--r-lg);padding:16px 24px;color:${ga!==null?'#fff':'var(--text-primary)'};text-align:center;min-width:140px;">
+          <div style="font-family:var(--ft);font-size:2.2rem;font-weight:800;line-height:1;">${ga!==null?ga:'—'}</div>
+          <div style="font-size:.78rem;opacity:.85;margin-top:4px;">${wt>0?wt+' coefs':'Pas de notes'}</div>
+        </div>
+      </div>
+      ${subs.map(s=>BN.card(s)).join('')}`;
+    lucide.createIcons({nodes:[el]});
+  },
+  avg(s){
+    if(!s.grades||!s.grades.length)return null;
+    let ws=0,wt=0;
+    s.grades.forEach(g=>{const v=parseFloat(g.v),c=parseFloat(g.c||1);if(!isNaN(v)){ws+=v*c;wt+=c;}});
+    return wt>0?parseFloat((ws/wt).toFixed(2)):null;
+  },
+  ac(a){if(a===null)return'';if(a>=10)return'ag';if(a>=7)return'am';return'ab';},
+  card(s){
+    const a=BN.avg(s),as=a!==null?a+'/20':'—',ac=BN.ac(a);
+    const gr=s.grades||[];
+    return`<div class="bcard" id="bc-${s.id}">
+      <div class="bch">
+        <div><div class="bcname">${s.name}</div><div class="bccoef">Coefficient matière : ${s.coef}</div></div>
+        <span class="bcavg ${ac}">${as}</span>
+      </div>
+      <div class="bgrades">
+        ${gr.length?gr.map((g,i)=>{
+          const pct=Math.min(100,Math.round((parseFloat(g.v)/20)*100));
+          const cl=parseFloat(g.v)>=10?'var(--green)':parseFloat(g.v)>=7?'var(--yellow)':'var(--red)';
+          return`<div class="grow">
+            <span class="glbl">${g.l||'Note '+(i+1)}</span>
+            <span class="gcoef">Coef ${g.c||1}</span>
+            <div class="gbar"><div class="gbarfill" style="width:${pct}%;background:${cl};"></div></div>
+            <span class="gval" style="color:${cl};">${g.v}/20</span>
+            <button class="ib" onclick="BN.delG('${s.id}',${i})" style="width:24px;height:24px;color:var(--red);"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
+          </div>`;
+        }).join(''):'<div style="color:var(--text-muted);font-size:.82rem;padding:4px 0;">Aucune note pour l\'instant.</div>'}
+      </div>
+      <div class="agrow">
+        <input class="ifield" style="flex:2;min-width:80px;" placeholder="Libellé (CC1, DS…)" id="gl-${s.id}"/>
+        <input type="number" class="ifield" style="width:68px;" placeholder="/20" min="0" max="20" step="0.25" id="gv-${s.id}"/>
+        <input type="number" class="ifield" style="width:52px;" placeholder="Coef" min="0.5" max="10" step="0.5" value="1" id="gc-${s.id}"/>
+        <button class="btn bp" style="padding:6px 10px;" onclick="BN.addG('${s.id}')"><i data-lucide="plus" style="width:13px;height:13px;"></i>Ajouter</button>
+      </div>
+      <div class="bacts">
+        <button class="btn bd" style="padding:5px 10px;font-size:.78rem;" onclick="BN.delS('${s.id}')"><i data-lucide="trash-2" style="width:13px;height:13px;"></i>Supprimer</button>
+      </div>
+    </div>`;
+  },
+  openAdd(){
+    M.open(`<div class="mttl">Nouvelle matière <button class="ib" onclick="M.close()" style="width:28px;height:28px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button></div>
+      <div class="fg"><label class="fl">Nom de la matière *</label><input class="ifield" style="width:100%;" id="smn" placeholder="Ex : Mathématiques"/></div>
+      <div class="fg"><label class="fl">Coefficient de la matière *</label><input type="number" class="ifield" style="width:100%;" id="smc" placeholder="Ex : 4" min="0.5" max="20" step="0.5" value="1"/><div class="fh">Ce coefficient sert à calculer la moyenne générale.</div></div>
+      <div class="fg"><label class="fl">Première note (obligatoire)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input class="ifield" style="flex:2;min-width:80px;" placeholder="Libellé (CC1…)" id="sml"/>
+          <input type="number" class="ifield" style="width:68px;" placeholder="/20" min="0" max="20" step="0.25" id="smv"/>
+          <input type="number" class="ifield" style="width:52px;" placeholder="Coef" min="0.5" step="0.5" value="1" id="smgc"/>
+        </div>
+      </div>
+      <div class="mft"><button class="btn bg" onclick="M.close()">Annuler</button><button class="btn bp" onclick="BN.saveAdd()">Créer</button></div>`);
+  },
+  saveAdd(){
+    const name=$('#smn').value.trim(),coef=$('#smc').value;
+    if(!name){Toast.show('Nom requis','e');return;}
+    const gv=$('#smv').value,gl=$('#sml').value.trim()||'Note 1',gc=$('#smgc').value||'1';
+    if(gv===''||isNaN(parseFloat(gv))){Toast.show('1ère note requise','e');return;}
+    if(parseFloat(gv)<0||parseFloat(gv)>20){Toast.show('Note entre 0 et 20','e');return;}
+    const subs=ST.g('bulletin',[]);
+    subs.push({id:Date.now()+'',name,coef:parseFloat(coef||1),grades:[{l:gl,v:gv,c:gc}]});
+    ST.s('bulletin',subs);M.close();BN.render();App.addXP(5);Toast.show('Matière ajoutée !','s');
+  },
+  addG(sid){
+    const v=$(`#gv-${sid}`).value,l=$(`#gl-${sid}`).value.trim(),c=$(`#gc-${sid}`).value||'1';
+    if(v===''||isNaN(parseFloat(v))){Toast.show('Note invalide','e');return;}
+    if(parseFloat(v)<0||parseFloat(v)>20){Toast.show('Note entre 0 et 20','e');return;}
+    const subs=ST.g('bulletin',[]),s=subs.find(x=>x.id===sid);if(!s)return;
+    s.grades.push({l:l||'Note '+(s.grades.length+1),v,c});
+    ST.s('bulletin',subs);BN.render();App.addXP(3);Toast.show('Note ajoutée !','s');
+  },
+  delG(sid,idx){const subs=ST.g('bulletin',[]),s=subs.find(x=>x.id===sid);if(!s)return;s.grades.splice(idx,1);ST.s('bulletin',subs);BN.render()},
+  delS(sid){ST.s('bulletin',ST.g('bulletin',[]).filter(s=>s.id!==sid));BN.render();Toast.show('Matière supprimée','i')}
+};
+
+/* ============================================================
+   QUIZ & EXERCICES
+============================================================ */
+const QB={
+  Maths:[
+    {q:"Combien vaut 2⁸ ?",c:["128","256","512","64"],a:1,e:"2⁸ = 256."},
+    {q:"Dérivée de sin(x) ?",c:["cos(x)","-cos(x)","tan(x)","-sin(x)"],a:0,e:"La dérivée de sin(x) est cos(x)."},
+    {q:"PGCD(48, 36) = ?",c:["6","12","18","24"],a:1,e:"48=12×4 et 36=12×3 → PGCD=12."},
+    {q:"Racines de x²-5x+6=0 ?",c:["1 et 6","2 et 3","-2 et -3","0 et 5"],a:1,e:"(x-2)(x-3)=0 → x=2 ou x=3."},
+    {q:"π arrondi à 4 décimales ?",c:["3.1416","3.1214","3.1618","3.1028"],a:0,e:"π ≈ 3.14159… → 3.1416."},
+  ],
+  Physique:[
+    {q:"Vitesse de la lumière ?",c:["3×10⁸ m/s","3×10⁶ m/s","3×10⁵ km/h","3×10⁷ m/s"],a:0,e:"c ≈ 3×10⁸ m/s dans le vide."},
+    {q:"Énergie cinétique ?",c:["E=mc²","Ec=½mv²","E=mgh","E=Pt"],a:1,e:"Ec=½mv²."},
+    {q:"Unité de résistance ?",c:["Volt","Ampère","Ohm","Watt"],a:2,e:"Résistance en Ohms (Ω)."},
+    {q:"1ère loi de Newton ?",c:["F=ma","Inertie","Action-réaction","Conservation"],a:1,e:"Principe d'inertie."},
+  ],
+  Français:[
+    {q:"'Il aurait mangé' est au…",c:["Subj. présent","Cond. passé","Plus-que-parfait","Futur antérieur"],a:1,e:"Conditionnel passé 1ère forme."},
+    {q:"Auteur des Misérables ?",c:["Zola","Victor Hugo","Flaubert","Balzac"],a:1,e:"Victor Hugo, 1862."},
+    {q:"Métaphore = ?",c:["Comp. avec 'comme'","Comp. sans outil","Jeu de sons","Répétition"],a:1,e:"Comparaison implicite sans outil."},
+    {q:"Nature de 'rapidement' ?",c:["Adjectif","Nom","Adverbe","Préposition"],a:2,e:"Adverbe de manière."},
+  ],
+  Histoire:[
+    {q:"Révolution française ?",c:["1776","1789","1799","1815"],a:1,e:"1789, prise de la Bastille."},
+    {q:"Fin de la 2e Guerre mondiale ?",c:["1918","1939","1945","1950"],a:2,e:"1945, capitulation All. et Jap."},
+    {q:"Napoléon était ?",c:["Roi","Président","Général et Empereur","Cardinal"],a:2,e:"Général puis Empereur."},
+  ]
+};
+const EB={
+  debutant:[
+    {q:"Train : 120 km en 2h → vitesse ?",c:["40 km/h","60 km/h","80 km/h","100 km/h"],a:1,e:"v=d/t=120/2=60 km/h."},
+    {q:"15% de 200 = ?",c:["20","25","30","35"],a:2,e:"0.15×200=30."},
+    {q:"Aire rectangle 8×5 cm ?",c:["26 cm²","35 cm²","40 cm²","45 cm²"],a:2,e:"A=8×5=40 cm²."},
+  ],
+  intermediaire:[
+    {q:"Simplifier (x²-4)/(x-2) pour x≠2",c:["x-2","x+2","x²+2","2x"],a:1,e:"x²-4=(x-2)(x+2) → x+2."},
+    {q:"Résoudre 2x+3=11",c:["x=3","x=4","x=5","x=7"],a:1,e:"2x=8 → x=4."},
+    {q:"Vecteur AB avec A(1,2) B(4,6) ?",c:["(3,4)","(5,8)","(3,8)","(4,3)"],a:0,e:"AB=(4-1,6-2)=(3,4)."},
+  ],
+  avance:[
+    {q:"Dérivée de f(x)=x³-3x²+2x ?",c:["3x²-6x+2","3x²-6x","x²-3x+2","3x-6"],a:0,e:"f'(x)=3x²-6x+2."},
+    {q:"∫₀¹ x² dx = ?",c:["1/2","1/3","1/4","2/3"],a:1,e:"[x³/3]₀¹ = 1/3."},
+    {q:"lim(x→0) sin(x)/x = ?",c:["0","∞","1","π"],a:2,e:"Limite fondamentale = 1."},
+  ],
+  expert:[
+    {q:"Résoudre ln(x+1)=2 dans ℝ",c:["x=e²-1","x=e-1","x=2e","x=e²+1"],a:0,e:"x+1=e² → x=e²-1."},
+    {q:"Racines réelles de x⁴+x²+1 ?",c:["0","2","4","1"],a:0,e:"x⁴+x²+1>0 ∀x ∈ ℝ → 0 racine."},
+  ]
+};
+const EL=[
+  {id:'debutant',n:'Débutant',i:'🌱',b:'debutant'},
+  {id:'intermediaire',n:'Intermédiaire',i:'📘',b:'intermediaire'},
+  {id:'avance',n:'Avancé',i:'🔥',b:'avance'},
+  {id:'expert',n:'Expert',i:'💎',b:'expert'},
+];
+
+const QM={
+  ctab:'quiz',qsubj:'Maths',qs:[],qi:0,qa:[],elid:null,
+  tab(t){
+    this.ctab=t;$$('.qtab').forEach(b=>b.classList.remove('active'));$('#qt-'+( t==='quiz'?'q':'e')).classList.add('active');
+    if(t==='quiz')QM.qStart();else QM.eStart();
+  },
+  renderCur(){if(this.ctab==='quiz')QM.qStart();else QM.eStart()},
+
+  /* -- QUIZ -- */
+  qStart(){
+    const ar=$('#quiz-area');
+    ar.innerHTML=`<div class="qstart">
+      <div class="qsi"><i data-lucide="brain" style="width:36px;height:36px;"></i></div>
+      <div class="stitle" style="font-size:1.3rem;">Quiz d'échauffement</div>
+      <p style="color:var(--text-secondary);font-size:.9rem;margin-top:8px;">5 questions pour activer ta mémoire.</p>
+      <div class="qss">${Object.keys(QB).map(s=>`<button class="qsb ${s===QM.qsubj?'active':''}" onclick="QM.selSubj('${s}',this)">${s}</button>`).join('')}</div>
+      <button class="btn bp" style="margin:0 auto;" onclick="QM.qGo()"><i data-lucide="play" style="width:15px;height:15px;"></i>Commencer</button>
+    </div>`;
+    lucide.createIcons({nodes:[ar]});
+  },
+  selSubj(s,b){this.qsubj=s;$$('.qsb').forEach(x=>x.classList.remove('active'));b.classList.add('active')},
+  qGo(){
+    this.qs=[...(QB[this.qsubj]||[])].sort(()=>Math.random()-.5).slice(0,5);
+    this.qi=0;this.qa=[];QM.qQ();
+  },
+  qQ(){
+    const q=this.qs[this.qi],L=['A','B','C','D'];
+    $('#quiz-area').innerHTML=`<div class="qcard">
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;color:var(--text-muted);margin-bottom:12px;"><span>${QM.qsubj}</span><span>${QM.qi+1}/${QM.qs.length}</span></div>
+      <div class="qprog">${QM.qs.map((_,i)=>`<div class="qpd ${i<QM.qi?'done':''}"></div>`).join('')}</div>
+      <div class="qq">${q.q}</div>
+      <div class="qchs">${q.c.map((c,i)=>`<button class="qch" onclick="QM.qAns(${i})" id="qc${i}"><span style="width:26px;height:26px;border-radius:6px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">${L[i]}</span>${c}</button>`).join('')}</div>
+      <div id="qexp"></div>
+    </div>`;
+  },
+  qAns(i){
+    const q=this.qs[this.qi],ok=q.a===i;this.qa.push({i,ok});
+    $$('.qch').forEach((b,j)=>{b.classList.add('lk');if(j===q.a)b.classList.add('ok');else if(j===i&&!ok)b.classList.add('ko');});
+    $('#qexp').innerHTML=`<div class="qexp"><strong>${ok?'✅ Correct !':'❌ Incorrect.'}</strong> ${q.e}</div>`;
+    if(ok)App.addXP(8);
+    setTimeout(()=>{this.qi++;if(this.qi<this.qs.length)QM.qQ();else QM.qRes()},1600);
+  },
+  qRes(){
+    const ok=this.qa.filter(a=>a.ok).length,pct=Math.round((ok/this.qs.length)*100);
+    const msg=pct===100?'🏆 Parfait !':pct>=70?'🎉 Très bien !':pct>=40?'👍 Pas mal !':'💪 Continue !';
+    App.addXP(20);DC.upd('quiz');ST.s('quiz_c',(ST.g('quiz_c',0)||0)+1);
+    $('#quiz-area').innerHTML=`<div class="qres">
+      <div class="qsc" style="--pct:${pct}"><div class="qsi2">${pct}%</div></div>
+      <div class="stitle" style="font-size:1.3rem;">${msg}</div>
+      <p style="color:var(--text-secondary);margin:8px 0 24px;">${ok}/${this.qs.length} correctes · ${QM.qsubj}</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn bp" onclick="QM.qGo()"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>Réessayer</button>
+        <button class="btn bg" onclick="QM.qStart()"><i data-lucide="list" style="width:14px;height:14px;"></i>Autre matière</button>
+      </div>
+    </div>`;
+    lucide.createIcons({nodes:[$('#quiz-area')]});
+  },
+
+  /* -- EXO -- */
+  eStart(){
+    const prog=ST.g('exo_prog',{unl:0,stars:{}});
+    const ar=$('#quiz-area');
+    ar.innerHTML=`<div style="margin-bottom:20px;">
+      <div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:4px;">Progression</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;height:8px;background:var(--border);border-radius:99px;overflow:hidden;"><div style="width:${Math.round((prog.unl/EL.length)*100)}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:99px;"></div></div>
+        <span style="font-size:.82rem;font-weight:700;color:var(--accent);">${prog.unl}/${EL.length} niveaux</span>
+      </div>
+    </div>
+    <div class="elvls">${EL.map((l,i)=>{
+      const lkd=i>prog.unl,cmp=i<prog.unl,cur=i===prog.unl;
+      const st=prog.stars[l.id]||0;
+      return`<div class="elcard ${lkd?'lkd':''} ${cmp?'cmp':''} ${cur?'cur':''}" onclick="${lkd?'Toast.show(\'Termine le niveau précédent !\',\'i\')':'QM.eLvl(\''+l.id+'\')'}">
+        ${lkd?`<div class="elk"><i data-lucide="lock" style="width:14px;height:14px;color:var(--text-muted);"></i></div>`:''}
+        <div class="elnum">${l.i}</div>
+        <div class="elname">${l.n}</div>
+        <div class="elstars">${cmp?'⭐'.repeat(st)+'☆'.repeat(3-st):cur?'En cours':'🔒'}</div>
+      </div>`;
+    }).join('')}</div>`;
+    lucide.createIcons({nodes:[ar]});
+  },
+  eLvl(lid){
+    const l=EL.find(x=>x.id===lid);if(!l)return;
+    this.elid=lid;this.qs=[...EB[l.b]].sort(()=>Math.random()-.5);this.qi=0;this.qa=[];QM.eQ(l);
+  },
+  eQ(l){
+    if(!l)l=EL.find(x=>x.id===QM.elid);
+    const q=this.qs[this.qi],L=['A','B','C','D'];
+    $('#quiz-area').innerHTML=`<div class="qcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--text-muted);margin-bottom:12px;">
+        <span class="lvlbdg">${l.i} ${l.n}</span><span>${QM.qi+1}/${QM.qs.length}</span>
+      </div>
+      <div class="qprog">${QM.qs.map((_,i)=>`<div class="qpd ${i<QM.qi?'done':''}"></div>`).join('')}</div>
+      <div class="qq">${q.q}</div>
+      <div class="qchs">${q.c.map((c,i)=>`<button class="qch" onclick="QM.eAns(${i})" id="ec${i}"><span style="width:26px;height:26px;border-radius:6px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">${L[i]}</span>${c}</button>`).join('')}</div>
+      <div id="eexp"></div>
+      <button class="btn bg" style="margin-top:16px;" onclick="QM.eStart()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i>Niveaux</button>
+    </div>`;
+  },
+  eAns(i){
+    const q=this.qs[this.qi],ok=q.a===i;this.qa.push({i,ok});
+    $$('.qch').forEach((b,j)=>{b.classList.add('lk');if(j===q.a)b.classList.add('ok');else if(j===i&&!ok)b.classList.add('ko');});
+    $('#eexp').innerHTML=`<div class="qexp"><strong>${ok?'✅ Correct !':'❌ Incorrect.'}</strong> ${q.e}</div>`;
+    if(ok)App.addXP(12);
+    setTimeout(()=>{this.qi++;if(this.qi<this.qs.length)QM.eQ(null);else QM.eRes()},1800);
+  },
+  eRes(){
+    const ok=this.qa.filter(a=>a.ok).length,pct=Math.round((ok/this.qs.length)*100);
+    const pass=pct>=70,st=pct>=90?3:pct>=70?2:1;
+    const prog=ST.g('exo_prog',{unl:0,stars:{}});
+    const li=EL.findIndex(l=>l.id===this.elid);
+    if(pass&&li===prog.unl){prog.unl=Math.min(EL.length-1,prog.unl+1);Toast.show('🎉 Niveau suivant débloqué !','s',4000);}
+    if(!prog.stars[this.elid]||st>prog.stars[this.elid])prog.stars[this.elid]=st;
+    ST.s('exo_prog',prog);
+    const msg=pct===100?'🏆 Parfait !':pass?'🎉 Niveau réussi !':'💪 Tu peux faire mieux !';
+    DC.upd('exo');ST.s('exo_c',(ST.g('exo_c',0)||0)+1);App.addXP(pass?30:10);
+    $('#quiz-area').innerHTML=`<div class="qres">
+      <div class="qsc" style="--pct:${pct}"><div class="qsi2">${pct}%</div></div>
+      <div style="font-size:1.8rem;margin:8px 0;">${'⭐'.repeat(st)+'☆'.repeat(3-st)}</div>
+      <div class="stitle" style="font-size:1.3rem;">${msg}</div>
+      <p style="color:var(--text-secondary);margin:8px 0 6px;">${ok}/${this.qs.length} correctes</p>
+      ${pass?'<p style="color:var(--green);font-size:.85rem;margin-bottom:20px;">✅ Score ≥ 70% — niveau validé !</p>':'<p style="color:var(--yellow);font-size:.85rem;margin-bottom:20px;">⚠️ 70% requis pour passer.</p>'}
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn bp" onclick="QM.eLvl('${this.elid}')"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>Réessayer</button>
+        <button class="btn bg" onclick="QM.eStart()"><i data-lucide="grid" style="width:14px;height:14px;"></i>Tous les niveaux</button>
+      </div>
+    </div>`;
+    lucide.createIcons({nodes:[$('#quiz-area')]});
+  }
+};
+
+/* ============================================================
+   STATS
+============================================================ */
+const SV={
+  render(){
+    const tasks=ST.g('tasks',[]),ps=ST.g('pom_s',[]),xp=ST.g('xp',0),str=DB.streak();
+    const qc=ST.g('quiz_c',0)||0,ec=ST.g('exo_c',0)||0;
+    const tot=(ST.g('tt_total',0)||0)+(ST.g('tt_today',0)||0);
+    const pm=ps.filter(s=>s.t==='work').reduce((a,s)=>a+s.dur,0);
+    const nc=ST.g('bulletin',[]).reduce((a,s)=>a+s.grades.length,0);
+    const ce=ST.g('cal_evts',[]).length;
+    const done=tasks.filter(t=>t.done).length;
+    const mi=[
+      {v:Math.floor(tot/60)+'h'+(tot%60)+'m',l:'Temps sur l\'app',c:'var(--accent)'},
+      {v:Math.floor(pm/60)+'h'+(pm%60)+'m',l:'Sessions Pomodoro',c:'var(--yellow)'},
+      {v:done,l:'Tâches terminées',c:'var(--green)'},
+      {v:qc,l:'Quiz complétés',c:'var(--cyan)'},
+      {v:ec,l:'Exercices faits',c:'var(--pink)'},
+      {v:nc,l:'Notes saisies',c:'var(--orange)'},
+      {v:str+' j',l:'Jours consécutifs',c:'var(--red)'},
+      {v:ce,l:'Événements planifiés',c:'var(--blue)'},
+    ];
+    $('#stg').innerHTML=mi.map(m=>`<div class="stm"><div class="stmv" style="color:${m.c};">${m.v}</div><div class="stml">${m.l}</div></div>`).join('');
+    lucide.createIcons({nodes:[$('#stg')]});
+    // Weekly chart
+    const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],td=new Date();
+    const wd=Array.from({length:7},(_,i)=>{const d=new Date(td);d.setDate(d.getDate()-(6-i));const ds=d.toISOString().split('T')[0];return ps.filter(s=>s.t==='work'&&s.at.startsWith(ds)).reduce((a,s)=>a+s.dur,0);});
+    const mx=Math.max(...wd,1),dw=td.getDay(),adj=[...days.slice(dw===0?0:dw),...days.slice(0,dw===0?0:dw)];
+    $('#wch').innerHTML=wd.map((v,i)=>`<div class="wcbw" title="${v} min"><div class="wcb" style="height:${Math.round((v/mx)*100)}%;"></div><div class="wcl">${adj[i]}</div></div>`).join('');
+    // Streak grid
+    $('#strd').innerHTML=Array.from({length:28},(_,i)=>{const d=new Date(td);d.setDate(d.getDate()-(27-i));const ds=d.toISOString().split('T')[0];const act=ps.some(s=>s.at.startsWith(ds))||tasks.some(t=>t.cat&&t.cat.startsWith(ds));return`<div class="sd ${act?'act':''}" title="${ds}"></div>`;}).join('');
+  }
+};
+
+/* ============================================================
+   BADGES
+============================================================ */
+const BD=[
+  {id:'ft',e:'⭐',n:'Premier pas',d:'1ère tâche',c:()=>ST.g('tasks',[]).length>=1},
+  {id:'t10',e:'🏅',n:'Travailleur',d:'10 tâches terminées',c:()=>ST.g('tasks',[]).filter(t=>t.done).length>=10},
+  {id:'fp',e:'🍅',n:'Pomodoro',d:'1ère session',c:()=>ST.g('pom_s',[]).filter(s=>s.t==='work').length>=1},
+  {id:'p5',e:'🔥',n:'En feu',d:'5 sessions Pomodoro',c:()=>ST.g('pom_s',[]).filter(s=>s.t==='work').length>=5},
+  {id:'fs',e:'📝',n:'Scribe',d:'1ère matière au bulletin',c:()=>ST.g('bulletin',[]).length>=1},
+  {id:'s5',e:'📚',n:'Bibliothèque',d:'5 matières au bulletin',c:()=>ST.g('bulletin',[]).length>=5},
+  {id:'l3',e:'🚀',n:'Niveau 3',d:'Atteindre niveau 3',c:()=>Math.floor(ST.g('xp',0)/200)+1>=3},
+  {id:'l5',e:'💎',n:'Élite',d:'Atteindre niveau 5',c:()=>Math.floor(ST.g('xp',0)/200)+1>=5},
+  {id:'str3',e:'🌟',n:'Régulier',d:'3 jours consécutifs',c:()=>ST.g('streak',{count:0}).count>=3},
+  {id:'q3',e:'🧠',n:'Quiz Master',d:'3 quiz complétés',c:()=>ST.g('quiz_c',0)>=3},
+  {id:'eu',e:'⚡',n:'Challenger',d:'1er niveau exo débloqué',c:()=>ST.g('exo_prog',{unl:0}).unl>=1},
+  {id:'ce',e:'📅',n:'Organisé',d:'1 événement ajouté',c:()=>ST.g('cal_evts',[]).length>=1},
+];
+const Badges={
+  check(){
+    const ul=ST.g('badges',[]);
+    BD.forEach(b=>{if(!ul.includes(b.id)&&b.c()){ul.push(b.id);ST.s('badges',ul);Toast.show('🏆 Badge : '+b.n+' !','s',4000);}});
+  }
+};
+
+/* ============================================================
+   DAILY CHALLENGES
+============================================================ */
+const DC={
+  def(){return[
+    {id:'add_task',label:'Ajouter une tâche'},
+    {id:'complete_task',label:'Terminer une tâche'},
+    {id:'pomodoro',label:'Compléter une session Pomodoro'},
+    {id:'quiz',label:'Passer un quiz'},
+    {id:'exo',label:'Faire un exercice'},
+  ]},
+  key(){return'dc_'+new Date().toISOString().split('T')[0]},
+  get(){const d=ST.g(DC.key(),{});return DC.def().map(c=>({...c,done:!!(d[c.id]>=1)}))},
+  upd(id){const k=DC.key(),d=ST.g(k,{});d[id]=(d[id]||0)+1;ST.s(k,d)}
+};
+
+/* ============================================================
+   GAMIFICATION VIEW
+============================================================ */
+const GV={
+  render(){
+    const xp=ST.g('xp',0),l=Math.floor(xp/200)+1,cx=xp%200,pct=Math.round((cx/200)*100);
+    const nm=['','Débutant','Apprenti','Étudiant','Studieux','Expert','Maître','Légende'];
+    $('#lvld').innerHTML=`
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:1.5rem;font-weight:800;color:#fff;box-shadow:0 0 20px var(--accent-glow);">${l}</div>
+        <div><div style="font-family:var(--ft);font-size:1.15rem;font-weight:800;">${nm[Math.min(l,nm.length-1)]||'Niv.'+l}</div><div style="color:var(--text-secondary);font-size:.85rem;">${xp} XP total</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-muted);margin-bottom:6px;"><span>${cx} XP</span><span>200 XP prochain niveau</span></div>
+      <div style="height:10px;background:var(--border);border-radius:99px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:99px;transition:width .5s;"></div></div>`;
+    const ul=ST.g('badges',[]);
+    $('#bdgg').innerHTML=BD.map(b=>`<div class="bgi ${ul.includes(b.id)?'unl':''}" title="${b.d}"><div class="bgico" style="${!ul.includes(b.id)?'filter:grayscale(1) opacity(.4)':''}">${b.e}</div><div class="bgname">${b.n}</div><div class="bglbl">${ul.includes(b.id)?'✓ Débloqué':b.d}</div></div>`).join('');
+    const ch=DC.get(),dn=ch.filter(c=>c.done).length,pct2=Math.round((dn/ch.length)*100);
+    $('#dcf').innerHTML=`<div style="margin-bottom:8px;font-size:.85rem;color:var(--text-secondary);">${dn}/${ch.length} défis aujourd'hui</div>
+      <div style="height:8px;background:var(--border);border-radius:99px;margin-bottom:14px;overflow:hidden;"><div style="width:${pct2}%;height:100%;background:var(--accent);border-radius:99px;"></div></div>
+      ${ch.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-subtle);">
+        <div style="width:20px;height:20px;border-radius:5px;background:${c.done?'var(--green)':'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:.7rem;">${c.done?'✓':''}</div>
+        <span style="font-size:.88rem;${c.done?'text-decoration:line-through;color:var(--text-muted);':''}">${c.label}</span>
+        ${c.done?'<span style="margin-left:auto;font-size:.72rem;color:var(--green);font-weight:600;">+10 XP</span>':''}
+      </div>`).join('')}`;
+    lucide.createIcons({nodes:[$('#panel-gamif')]});
+  }
+};
+
+/* ============================================================
+   BOOT
+============================================================ */
+document.addEventListener('keydown',e=>{if(e.key==='Escape')M.close();});
+document.addEventListener('DOMContentLoaded',()=>{
+  lucide.createIcons();
+  OB.init();
+  const p=ST.g('profile');
+  if(p)App.init();
+  const td=new Date().toISOString().split('T')[0];
+  if($('#td'))$('#td').value=td;
+});
+</script>
+</body>
+</html>
