@@ -8,7 +8,7 @@ StudyFlow is a modern student productivity platform designed to help students st
 - ⏳ Pomodoro timer
 - 📅 Calendar
 - 📝 Quizzes
-- 🎮 Gamification system
+- 🎮 Gamification system 
 - 🌙 Modern interface
 
 ## 🛠 Technologies
